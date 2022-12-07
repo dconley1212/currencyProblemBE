@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const fs = require("fs");
+const fs = require("fs").promises;
 const multer = require("multer");
 const upload = multer({ dest: "./public/data/uploads/" });
 
@@ -17,67 +17,18 @@ For example the strings of numbers would have sparsed strings where the length w
 the number of values. That tripped me up for a while. Anyways I didn't get it to work.
 */
 
-server.post("/textArea", (req, res, next) => {
-  //   console.log(req.body.textArea);
-  const { textArea } = req.body;
-  const dataSets = {};
-
-  let count = parseInt(textArea[0]);
-  dataSetCount = 1;
-  function separateData(textAreaArray, count) {
-    if (textAreaArray.length === 0 || count === 0) {
-      return;
-    }
-    console.log(textAreaArray.length);
-    // console.log(textAreaArray);
-    let denominationsAndPrices = textAreaArray[0];
-    // console.log(denominationsAndPrices);
-    let denominations = parseInt(denominationsAndPrices[0]);
-    // console.log(denominations);
-
-    let differentPrices = parseInt(denominationsAndPrices[2]);
-    console.log(differentPrices);
-    let notesQuantityString = textAreaArray[1];
-    notesQuantityString += "1";
-    console.log(notesQuantityString);
-    let counterNote = 0;
-    let counterDenomination = 0;
-    let counterPrice = 2;
-    let maxPrice = 0;
-    let minPrice = 0;
-
-    while (differentPrices > 0) {
-      const value =
-        parseInt(notesQuantityString[counterNote]) *
-        parseInt(textAreaArray[counterPrice][counterDenomination]);
-      maxPrice = Math.max(maxPrice, value);
-      minPrice = Math.min(minPrice, value);
-      counterNote++;
-      counterDenomination++;
-      if (counterDenomination === denominations) {
-        counterNote = 0;
-        counterDenomination = 0;
-        counterPrice++;
-        // console.log(differentPrices);
-        differentPrices--;
-      }
-    }
-    dataSets[`Data Set ${dataSetCount}`] = maxPrice - minPrice;
-    dataSetCount++;
-    let nextSlice = parseInt(denominationsAndPrices[2]) + denominations;
-    console.log(textAreaArray.slice(nextSlice));
-    separateData(textAreaArray.slice(nextSlice), count--);
-  }
-  let firstSlice = textArea.slice(1);
-  console.log(firstSlice);
-  separateData(firstSlice, count);
-
-  // console.log(dataSets);
-  res.status(200);
-});
+server.post("/textArea", (req, res, next) => {});
 
 server.post("/file", upload.single("uploaded_file"), (req, res, next) => {
-  console.log(req.body);
+  try {
+    async function readFile(file) {
+      const data = await fs.readFile(file.path, "utf8", file);
+      console.log(data.toString());
+    }
+    readFile(req.file);
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 server.use((err, req, res, next) => {
